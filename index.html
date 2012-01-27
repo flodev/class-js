@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="class.js"></script>
+
+    <script>
+    
+    $(function() {
+        // $.Class('Test', 
+        //     {
+        //         init: function() {
+        //         }
+        //     }, 
+        //     {
+        //         test: [],
+        //         schlummel: function() {
+        //             console.log("schlummel von Test");
+        //         }
+        //     }
+        // );
+
+        // Test('Test2', {
+        // 
+        // }, 
+        // {
+        //     schlummel: function() {
+        //          this._super();
+        //             console.log("schlummel von Test2");
+        //     }
+        //     //,
+        //     // _super: function() {
+        //     //     return "test";
+        //     // }
+        // });
+
+        $.Class('InstanceTest', {
+        },{
+        test: ''
+        });
+
+        var test = new InstanceTest();
+        test.test = "hallo";
+
+        var test2 = new InstanceTest();
+
+        console.log(test2);
+
+        // var test = new Test2();
+
+        // var test = new Test();
+
+        // test.test.push("fu");
+        // 
+        // var test2 = new Test();
+
+        // test.test.push("fu2");
+
+        // test.schlummel();
+
+        // console.log(test2);
+
+    });
+
+    </script>
+
+</head>
+
+<body>
+</body>
+</html>
