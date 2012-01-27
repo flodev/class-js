@@ -11,8 +11,12 @@
     $(function() {
         var test = {
             prop1: 'hallo',
-            prop2: 'hallo2'
+            prop2: 'hallo2',
+            -prop3: "muuuh"
         };
+
+        var obj = new test();
+        console.log(test.-prop3());
 
     });
 

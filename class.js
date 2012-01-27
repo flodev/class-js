@@ -313,6 +313,9 @@
 		 */
 		extend: function( fullName, klass, proto ) {
             console.log('extend was called');
+
+
+
 			// figure out what was passed and normalize it
 			if ( typeof fullName != 'string' ) {
 				proto = klass;
@@ -342,8 +345,6 @@
 			prototype = new this();
 			initializing = false;
 
-            console.log(newMethods);
-            console.log(newProperties);
 			
 			// Copy the properties over onto the new prototype
             console.log('inherit only functions!!! to prototype');

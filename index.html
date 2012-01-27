@@ -9,18 +9,18 @@
     <script>
     
     $(function() {
-        // $.Class('Test', 
-        //     {
-        //         init: function() {
-        //         }
-        //     }, 
-        //     {
-        //         test: [],
-        //         schlummel: function() {
-        //             console.log("schlummel von Test");
-        //         }
-        //     }
-        // );
+        $.Class('Test', 
+            {
+                init: function() {
+                }
+            }, 
+            {
+                $test: [],
+                schlummel: function() {
+                    console.log("schlummel von Test");
+                }
+            }
+        );
 
         // Test('Test2', {
         // 
@@ -36,31 +36,10 @@
         //     // }
         // });
 
-        $.Class('InstanceTest', {
-        },{
-        test: ''
-        });
 
-        var test = new InstanceTest();
-        test.test = "hallo";
+        var test = new Test();
 
-        var test2 = new InstanceTest();
 
-        console.log(test2);
-
-        // var test = new Test2();
-
-        // var test = new Test();
-
-        // test.test.push("fu");
-        // 
-        // var test2 = new Test();
-
-        // test.test.push("fu2");
-
-        // test.schlummel();
-
-        // console.log(test2);
 
     });
 
