@@ -12,20 +12,33 @@
     $(function() {
         $.Class('Test', 
             {
-                init: function() {
-                }
-            }, 
-            {
                 init: function(param) {
-                    console.log('call initial');
-                    console.log(param); 
                 },
                 $test: [],
                 schlummel: function() {
                     console.log("schlummel von Test");
+                    this.privates.secret();
+                },
+                _secret: function() {
+                    console.log("geheim");
                 }
             }
         );
+        
+        // $.Class('Test', 
+        //     {
+        //         test: [],
+        //     },
+        //     {
+        //         init: function(param) {
+        //             console.log('call initial');
+        //             console.log(param); 
+        //         },
+        //         schlummel: function() {
+        //             console.log("schlummel von Test");
+        //         }
+        //     }
+        // );
 
         // Test('Test2', {
         // 
@@ -44,8 +57,14 @@
 
         var test = new Test('sfs');
 
+        console.log(test);
+        
+        console.log("call schlummel");
+        test.schlummel();
 
+        console.log(test);
 
+        // console.log(test);
     });
 
     </script>

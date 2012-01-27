@@ -311,29 +311,41 @@
 		 * 
 		 * @return {jQuery.Class} returns the new class
 		 */
-		extend: function( fullName, klass, proto ) {
+		extend: function( fullName, properties) {
             console.log('extend was called');
 
+            var statics = {}, privates = {}, publics = {}, name, extendedReference;
 
+            for (name in properties) {
+                if (name[0] == '$') {
+                    statics[name.substr(1,name.length)] = properties[name];
+                    continue;
+                }
+                if (name[0] == '_') {
+                    privates[name.substr(1,name.length)] = properties[name];
+                    continue;
+                }
+                
+                publics[name] = properties[name];
 
-			// figure out what was passed and normalize it
-			if ( typeof fullName != 'string' ) {
-				proto = klass;
-				klass = fullName;
-				fullName = null;
-			}
-			if (!proto ) {
-				proto = klass;
-				klass = null;
-			}
+            }
 
-			proto = proto || {};
+            console.log('statics');
+            console.log(statics);
+            
+            console.log('publics');
+            console.log(publics);
+            
+            console.log('privates');
+            console.log(privates);
+
+			proto = {};
 
             PropertyHelper.setObject(proto);
 
 			var _super_class = this,
 				_super = this[STR_PROTOTYPE],
-				name, shortName, namespace, prototype;
+				shortName, namespace, prototype;
 
 
                 console.log("super will be logged: ");
@@ -348,7 +360,8 @@
 			
 			// Copy the properties over onto the new prototype
             console.log('inherit only functions!!! to prototype');
-			inheritProps(proto, _super, prototype);
+			inheritProps(publics, _super, prototype);
+
 
 			// The dummy class constructor
 			function Class() {
@@ -357,8 +370,6 @@
 
 				// we are being called w/o new, we are extending
 				if ( this.constructor !== Class && arguments.length ) {
-                    console.log("what the fuck is callee?");
-                    console.log(arguments.callee);
 					return arguments.callee.extend.apply(arguments.callee, arguments);
 				} else { //we are being called w/ new
 					return this.Class.newInstance.apply(this.Class, arguments);
@@ -373,7 +384,7 @@
 
 			// copy new static props on class
             console.log('inherit static properties');
-			inheritProps(klass, this, Class);
+			inheritProps(statics, this, Class);
 
 		    registerClassInWindowNamespace(Class, fullName);
 
@@ -403,8 +414,6 @@
 			//make sure our prototype looks nice
 			Class[STR_PROTOTYPE].Class = Class[STR_PROTOTYPE].constructor = Class;
 
-			
-
 			// call the class setup
             console.log('call the class setup');
 			var args = Class.setup.apply(Class, concatArgs([_super_class],arguments));
@@ -414,6 +423,20 @@
 			if ( Class.init ) {
 				Class.init.apply(Class, args || concatArgs([_super_class],arguments));
 			}
+
+            for (name in Class.prototype) {
+                if (publics.hasOwnProperty(name)) {
+                    Class.prototype[name] = (function() {
+                        var originalProto = Class.prototype;
+                        var original = Class.prototype[name];
+                        return function() {
+                            originalProto.privates = privates;
+                            original.apply(this, arguments);
+                            delete originalProto.privates;
+                        }
+                    })();
+                }
+            }
 
 			/* @Prototype*/
 			return Class;

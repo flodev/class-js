@@ -9,14 +9,30 @@
     <script>
     
     $(function() {
-        var test = {
-            prop1: 'hallo',
-            prop2: 'hallo2',
-            -prop3: "muuuh"
-        };
 
-        var obj = new test();
-        console.log(test.-prop3());
+
+        
+        
+        var muhh = (function() {
+
+
+            var data = function() {
+                alert("hallo");
+            };
+                eval("var temp_=" + data + ";");
+
+
+            return {
+                get: function() {
+                    return temp_;
+                }
+            }
+        })();
+
+
+
+        muhh.get()();
+
 
     });
 
