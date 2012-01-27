@@ -348,7 +348,7 @@
 			
 			// Copy the properties over onto the new prototype
             console.log('inherit only functions!!! to prototype');
-			inheritProps(klass, this, Class);
+			inheritProps(proto, _super, prototype);
 
 			// The dummy class constructor
 			function Class() {

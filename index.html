@@ -4,6 +4,7 @@
 <head>
 
     <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="string.js"></script>
     <script type="text/javascript" src="class.js"></script>
 
     <script>
@@ -15,6 +16,10 @@
                 }
             }, 
             {
+                init: function(param) {
+                    console.log('call initial');
+                    console.log(param); 
+                },
                 $test: [],
                 schlummel: function() {
                     console.log("schlummel von Test");
@@ -37,7 +42,7 @@
         // });
 
 
-        var test = new Test();
+        var test = new Test('sfs');
 
 
 
