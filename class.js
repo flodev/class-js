@@ -70,7 +70,6 @@
             console.log(fnTest.test(newProps[name]));
             
             if (isFunction(newProps[name]) && isFunction(oldProps[name]) && fnTest.test(newProps[name])) {
-            // if (isFunction(newProps[name]) && isFunction(oldProps[name]) && fnTest.test(name)) {
 
                 console.log('overwritten prop detected!!!: ' + name);
                 console.log('overwrite existing function / property: ' + name);
@@ -331,21 +330,8 @@
 
 			var _super_class = this,
 				_super = this[STR_PROTOTYPE],
-				name, shortName, namespace, prototype,
-                newMethods = PropertyHelper.getMethods(),
-                newProperties = PropertyHelper.getProperties();
+				name, shortName, namespace, prototype;
 
-            PropertyHelper.setObject(_super);
-            var oldMethods = PropertyHelper.getMethods(),
-                oldProperties = PropertyHelper.getProperties(),
-                initialProps = {};
-
-            for (var i in newProperties) {
-                initialProps[i] = newProperties[i];
-            }
-
-            console.log("setting initial properties");
-            console.log(initialProps);
 
                 console.log("super will be logged: ");
                 console.log(_super);
@@ -361,19 +347,10 @@
 			
 			// Copy the properties over onto the new prototype
             console.log('inherit only functions!!! to prototype');
-			inheritProps(newMethods, oldMethods, prototype);
+			inheritProps(klass, this, Class);
 
 			// The dummy class constructor
 			function Class() {
-                // inherit properties to this class
-                // var name;
-                // for (name in oldProperties) {
-                //     this[name] = oldProperties[name];
-                // }
-                // for (name in newProperties) {
-                //     this[name] = newProperties[name];
-                // }
-                
 				// All construction is actually done in the init method
 				if ( initializing ) return;
 
@@ -383,12 +360,7 @@
                     console.log(arguments.callee);
 					return arguments.callee.extend.apply(arguments.callee, arguments);
 				} else { //we are being called w/ new
-					// return this.Class.newInstance.apply(this.Class, arguments);
-                    for (name in initialProps) {
-                        this[name] = initialProps[name];
-                        console.log('logging value');
-                        console.log(initialProps[name]);
-                    }
+					return this.Class.newInstance.apply(this.Class, arguments);
 				}
 			}
 			// Copy old stuff onto class
