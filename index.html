@@ -4,26 +4,60 @@
 <head>
 
     <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="Logger.js"></script>
     <script type="text/javascript" src="string.js"></script>
     <script type="text/javascript" src="class.js"></script>
 
     <script>
     
     $(function() {
-        $.Class('Test', 
-            {
-                init: function(param) {
-                },
-                $test: [],
-                schlummel: function() {
-                    console.log("schlummel von Test");
-                    this.privates.secret();
-                },
-                _secret: function() {
-                    console.log("geheim");
-                }
+
+        $.Class('ForExtend', {
+            init: function() {
+                console.log("von mir kann abgeleitet werden");
+            },
+
+            exti: function() {
+                console.log("exti func");
             }
-        );
+        });
+
+        $.Class('Derivate', {
+            extend: ForExtend,
+            init: function() {
+                console.log('ich bin derivat von forExtend');
+            },
+
+            muffi: function() {
+                console.log("muffi func");
+            }
+        });
+
+        var test = new ForExtend("fluhuuu");
+
+        var deri = new Derivate();
+
+        // test.exti();
+
+        console.log(test);
+        console.log(deri);
+
+        // $.Class('Test', 
+        //     {
+        //         extend: ForExtend,
+
+        //         init: function(param) {
+        //         },
+        //         $test: [],
+        //         schlummel: function() {
+        //             console.log("schlummel von Test");
+        //             this.privates.secret();
+        //         },
+        //         _secret: function() {
+        //             console.log("geheim");
+        //         }
+        //     }
+        // );
         
         // $.Class('Test', 
         //     {
@@ -55,14 +89,14 @@
         // });
 
 
-        var test = new Test('sfs');
+        // var test = new Test('sfs');
 
-        console.log(test);
-        
-        console.log("call schlummel");
-        test.schlummel();
+        // console.log(test);
+        // 
+        // console.log("call schlummel");
+        // test.schlummel();
 
-        console.log(test);
+        // console.log(test);
 
         // console.log(test);
     });
