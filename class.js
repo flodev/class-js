@@ -384,26 +384,18 @@
             // }
         }
 
-        if (parentPrototype) {
-            Class[STR_PROTOTYPE] = parentPrototype;
-        }
+        $.extend(Class.prototype, parentPrototype, publics);
+
 
         // Copy the properties over onto the new prototype
-        console.log(parentPrototype)
-        console.log(STR_PROTOTYPE);
-
         inheritProps(publics, parentPrototype, Class[STR_PROTOTYPE]);
-        console.log(Class.prototype);
-        if (parentClass) {
-        throw new Error();
-        }
 
         // Copy old stuff onto class
-        for ( name in this ) {
-            if ( this.hasOwnProperty(name) ) {
-                Class[name] = this[name];
-            }
-        }
+        // for ( name in this ) {
+        //     if ( this.hasOwnProperty(name) ) {
+        //         Class[name] = this[name];
+        //     }
+        // }
 
         // copy new static props on class
         Logger.log('inherit static properties');

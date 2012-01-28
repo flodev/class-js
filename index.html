@@ -30,17 +30,26 @@
 
             muffi: function() {
                 console.log("muffi func");
+            },
+
+            exti: function() {
+                this._super();
+                console.log("overwrite exti");
             }
         });
 
         var test = new ForExtend("fluhuuu");
+        var test2 = new Derivate();
 
-        var deri = new Derivate();
+        test2.exti();
+
+
+        // var deri = new Derivate();
 
         // test.exti();
 
-        console.log(test);
-        console.log(deri);
+        // console.log(test);
+        // console.log(deri);
 
         // $.Class('Test', 
         //     {
