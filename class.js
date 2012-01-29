@@ -5,16 +5,22 @@
 
 (function( $ ) {
 
-    var PropertyHelper = {
-        privates: {},
-        publics: {},
-        statics: {},
-
-        setProperties: function(properties)
+    var PropertyHelper = 
+    {
+        _init: function()
         {
             this.privates = {};
             this.publics = {};
             this.statics = {};
+            this.parentClass = null;
+            this.parentPrototype = {};
+        },
+
+        determineProperties: function(properties)
+        {
+            this._init();
+            this._determineInheritance(properties);
+
             var name;
 
             for (name in properties) {
@@ -29,29 +35,40 @@
                 
                 this.publics[name] = properties[name];
             }
+        },
+
+        _determineInheritance: function(properties)
+        {
+            if (properties.extend === undefined) {
+                return;
+            }
+
+            if (!$.isFunction(properties.extend)) {
+                return;
+            }
+
+            this.parentClass = properties.extend;
+            this.parentPrototype = this.parentClass[STR_PROTOTYPE];
+            delete properties.extend;
         }
-    }
+    };
 
 	// =============== HELPERS =================
 
     // if we are initializing a new class
 	var initializing = false,
-		makeArray = $.makeArray,
-		isFunction = $.isFunction,
-		isArray = $.isArray,
-		extend = $.extend,
 		concatArgs = function(arr, args){
-			return arr.concat(makeArray(args));
+			return arr.concat($.makeArray(args));
 		},
 		
 		// tests if we can get super in .toString()
-		fnTest = /xyz/.test(function() {
+		isSuperCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
 		}) ? /\b_super\b/ : /.*/,
 		STR_PROTOTYPE = 'prototype';
 
     Logger.log('fntest: ');
-    Logger.log(fnTest);
+    Logger.log(isSuperCalledInFunctionRegEx);
 
     /**
      * overwrites an object with methods
@@ -61,37 +78,40 @@
      * @param addTo object (what we are adding to)
      */
     function inheritProps( newProps, oldProps, addTo ) {
-        console.log('inherit props');
-        console.log("old props");
-        console.log(oldProps);
-        console.log("new props");
-        console.log(newProps);
+        Logger.log('inherit props');
+        Logger.log("old props");
+        Logger.log(oldProps);
+        Logger.log("new props");
+        Logger.log(newProps);
         addTo = addTo || newProps;
-        console.log("add to");
-        console.log(addTo);
+        Logger.log("add to");
+        Logger.log(addTo);
         for ( var name in newProps ) {
             // Check if we're overwriting an existing function
-            console.log(fnTest);
-            console.log('test property: ' + name);
-            console.log(fnTest.test(newProps[name]));
+            Logger.log(isSuperCalledInFunctionRegEx);
+            Logger.log('test property: ' + name);
+            Logger.log(isSuperCalledInFunctionRegEx.test(newProps[name]));
 
 
-            console.log('isFunction(newProps[name])');
-            console.log(isFunction(newProps[name]));
-            console.log('isFunction(oldProps[name])');
-            console.log(isFunction(oldProps[name]));
-            console.log('fnTest.test(newProps[name])');
-            console.log(fnTest.test(newProps[name]));
+            Logger.log('isFunction(newProps[name])');
+            Logger.log($.isFunction(newProps[name]));
+            Logger.log('isFunction(oldProps[name])');
+            Logger.log($.isFunction(oldProps[name]));
+            Logger.log('fnTest.test(newProps[name])');
+            Logger.log(isSuperCalledInFunctionRegEx.test(newProps[name]));
             
-            if (isFunction(newProps[name]) && isFunction(oldProps[name]) && fnTest.test(newProps[name])) {
+            if ($.isFunction(newProps[name]) 
+                && $.isFunction(oldProps[name]) 
+                && isSuperCalledInFunctionRegEx.test(newProps[name])) 
+            {
 
-                console.log('overwritten prop detected!!!: ' + name);
-                console.log('overwrite existing function / property: ' + name);
+                Logger.log('overwritten prop detected!!!: ' + name);
+                Logger.log('overwrite existing function / property: ' + name);
 
                 addTo[name] = getOverriddenMethodWithSuper(newProps[name], oldProps[name]);
             }
             else {
-                console.log('is not super: '+ name);
+                Logger.log('is not super: '+ name);
                 addTo[name] = newProps[name];
             }
         }
@@ -117,7 +137,7 @@
             this._super = tmp;
             return ret;
         };
-    };
+    }
 
     /**
      * copied from $.String helper to remove dependency
@@ -181,10 +201,6 @@
      */
     function registerClassInWindowNamespace(Class, fullName) 
     {
-        if ( !fullName ) {
-            return;
-        }
-
         var parts = fullName.split(/\./),
             shortName = parts.pop(),
             current = getObject(parts.join('.'), window, true),
@@ -202,19 +218,17 @@
              + shortName);
     }
 
-
-
     function proxy(funcs)
     {
         //args that should be curried
-        var args = makeArray(arguments),
+        var args = $.makeArray(arguments),
             self;
 
         // get the functions to callback
         funcs = args.shift();
 
         // if there is only one function, make funcs into an array
-        if (!isArray(funcs) ) {
+        if (!$.isArray(funcs) ) {
             funcs = [funcs];
         }
         
@@ -223,7 +237,7 @@
         
         //!steal-remove-start
         for( var i =0; i< funcs.length;i++ ) {
-            if(typeof funcs[i] == "string" && !isFunction(this[funcs[i]])){
+            if(typeof funcs[i] == "string" && !$.isFunction(this[funcs[i]])){
                 throw ("class.js "+( this.fullName || this.Class.fullName)+" does not have a "+funcs[i]+"method!");
             }
         }
@@ -255,7 +269,7 @@
                 
                 // pass the result to the next function (if there is a next function)
                 if ( f < length - 1 ) {
-                    cur = !isArray(cur) || cur._use_call ? [cur] : cur;
+                    cur = !$.isArray(cur) || cur._use_call ? [cur] : cur;
                 }
             }
             return cur;
@@ -272,49 +286,11 @@
     function newInstance(instance, arguments) 
     {
         Logger.log('newInstance');
-        // get a raw instance objet (init is not called)
-        // var inst = this.rawInstance(),
-        //     args;
-            
-        // call setup if there is a setup
-        // if ( inst.setup ) {
-        //     args = inst.setup.apply(inst, arguments);
-        // }
         // call init if there is an init, if setup returned args, use those as the arguments
         if ( instance.init ) {
             instance.init.apply(instance, arguments);
         }
         return instance;
-    }
-
-    /**
-     * Setup gets called on the inherting class with the base class followed by the
-     * inheriting class's raw properties.
-     * 
-     * Setup will deeply extend a static defaults property on the base class with 
-     * properties on the base class.  For example:
-     * 
-     * @param {Object} baseClass the base class that is being inherited from
-     * @param {String} fullName the name of the new class
-     * @param {Object} staticProps the static properties of the new class
-     * @param {Object} protoProps the prototype properties of the new class
-     */
-    function setup(baseClass,fullName) 
-    {
-        Logger.log('setup');
-        // set defaults as the merger of the parent defaults and this object's defaults
-        this.defaults = extend(true, {}, baseClass.defaults, this.defaults);
-        return arguments;
-    }
-
-    function rawInstance() 
-    {
-        // prevent running init
-        initializing = true;
-        var inst = new this();
-        initializing = false;
-        // allow running init
-        return inst;
     }
 
     /**
@@ -327,25 +303,15 @@
     function createClass(fullName, properties) 
     {
         Logger.log('extend was called');
-        var parentClass = null,
-            parentPrototype = {};
-
-        if (properties.extend !== undefined) {
-            Logger.log("extend ref");
-            Logger.log(properties.extend);
-            if ($.isFunction(properties.extend)) {
-                parentClass = properties.extend;
-                parentPrototype = parentClass[STR_PROTOTYPE];
-            }
-            delete properties.extend;
-        }
         
-        PropertyHelper.setProperties(properties);
+        PropertyHelper.determineProperties(properties);
 
         var statics = PropertyHelper.statics,
             privates = PropertyHelper.privates,
             publics = PropertyHelper.publics,
-            name; 
+            parentClass = PropertyHelper.parentClass,
+            parentPrototype = PropertyHelper.parentPrototype,
+            name;
 
 
         Logger.log('statics');
@@ -373,19 +339,10 @@
 
          // The dummy class constructor
         function Class() {
-            // All construction is actually done in the init method
-            if ( initializing ) return;
-
-            // we are being called w/o new, we are extending
-            // if ( this.constructor !== Class && arguments.length ) {
-            //     return arguments.callee.extend.apply(arguments.callee, arguments);
-            // } else { //we are being called w/ new
-                return newInstance(this, arguments);
-            // }
+            return newInstance(this, arguments);
         }
 
         $.extend(Class.prototype, parentPrototype, publics);
-
 
         // Copy the properties over onto the new prototype
         inheritProps(publics, parentPrototype, Class[STR_PROTOTYPE]);
@@ -399,7 +356,7 @@
 
         // copy new static props on class
         Logger.log('inherit static properties');
-        // inheritProps(statics, parentClass, Class);
+        inheritProps(statics, parentClass || function() {}, Class);
 
         registerClassInWindowNamespace(Class, fullName);
 
@@ -439,27 +396,5 @@
     clss = $.Class = function(fullName, properties) {
         createClass(fullName, properties);
 	};
-
-
-	/* @Static*/
-	// extend(clss, 
-    // {
-	// });
-
-
-	clss.callback = clss[STR_PROTOTYPE].callback = clss[STR_PROTOTYPE].
-	/**
-	 * @function proxy
-	 * Returns a method that sets 'this' to the current instance.  This does the same thing as 
-	 * and is described better in [jQuery.Class.static.proxy].
-	 * The only difference is this proxy works
-	 * on a instance instead of a class.
-	 * @param {String|Array} fname If a string, it represents the function to be called.  
-	 * If it is an array, it will call each function in order and pass the return value of the prior function to the
-	 * next function.
-	 * @return {Function} the callback function
-	 */
-	proxy = clss.proxy;
-
 
 })(jQuery);

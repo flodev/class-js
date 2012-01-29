@@ -19,29 +19,35 @@
 
             exti: function() {
                 console.log("exti func");
+            },
+            $hallo: function() {
+                console.log("ich bin statisch"); 
             }
         });
 
-        $.Class('Derivate', {
-            extend: ForExtend,
-            init: function() {
-                console.log('ich bin derivat von forExtend');
-            },
+        // $.Class('Derivate', {
+        //     extend: ForExtend,
+        //     init: function() {
+        //         console.log('ich bin derivat von forExtend');
+        //     },
 
-            muffi: function() {
-                console.log("muffi func");
-            },
+        //     muffi: function() {
+        //         console.log("muffi func");
+        //     },
 
-            exti: function() {
-                this._super();
-                console.log("overwrite exti");
-            }
-        });
+        //     exti: function() {
+        //         this._super();
+        //         console.log("overwrite exti");
+        //     }
+        // });
 
         var test = new ForExtend("fluhuuu");
-        var test2 = new Derivate();
+        ForExtend.hallo();
 
-        test2.exti();
+        console.log(test);
+        // var test2 = new Derivate();
+
+        // test2.exti();
 
 
         // var deri = new Derivate();
