@@ -60,12 +60,21 @@
 		concatArgs = function(arr, args){
 			return arr.concat($.makeArray(args));
 		},
-		
-		// tests if we can get super in .toString()
 		isSuperCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
 		}) ? /\b_super\b/ : /.*/,
+        isPrivateCalledInFunctionRegEx = /xyz/.test(function() {
+			xyz;
+        }) ? /\bthis\.privates\.\b/ : /.*/,
 		STR_PROTOTYPE = 'prototype';
+
+        var test = function() {
+            this.privates()
+        }
+
+        console.log(isPrivateCalledInFunctionRegEx.test(test));
+
+
 
     Logger.log('fntest: ');
     Logger.log(isSuperCalledInFunctionRegEx);
