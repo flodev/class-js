@@ -47,4 +47,8 @@ describe('Instantiation tests', function() {
        
     });
 
+    describe('Test static methods', function() {
+    
+    });
+
 });
