@@ -5,46 +5,48 @@
 
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="Logger.js"></script>
-    <script type="text/javascript" src="string.js"></script>
+    <!-- <script type="text/javascript" src="string.js"></script> -->
     <script type="text/javascript" src="class.js"></script>
 
     <script>
     
     $(function() {
 
-        $.Class('ForExtend', {
-            init: function() {
-                console.log("von mir kann abgeleitet werden");
-            },
+        // $.Class('ForExtend', {
+        //     init: function() {
+        //         console.log("von mir kann abgeleitet werden");
+        //     },
 
-            exti: function() {
-                console.log("exti func");
-            },
-            $hallo: function() {
-                console.log("ich bin statisch"); 
-            }
-        });
+        //     exti: function() {
+        //         console.log("exti func");
+        //     },
+        //     $hallo: function() {
+        //         console.log("ich bin statisch"); 
+        //     }
+        // });
 
         // $.Class('Derivate', {
         //     extend: ForExtend,
         //     init: function() {
         //         console.log('ich bin derivat von forExtend');
         //     },
-
+        
         //     muffi: function() {
         //         console.log("muffi func");
         //     },
-
+                // console.log("muffi func");
         //     exti: function() {
         //         this._super();
         //         console.log("overwrite exti");
         //     }
         // });
+        //     }
+        // });
 
-        var test = new ForExtend("fluhuuu");
-        ForExtend.hallo();
+        // var test = new ForExtend("fluhuuu");
+        // ForExtend.hallo();
 
-        console.log(test);
+        // console.log(test);
         // var test2 = new Derivate();
 
         // test2.exti();
@@ -104,7 +106,9 @@
         // });
 
 
-        // var test = new Test('sfs');
+
+
+        // var test = new Test2('sfs');
 
         // console.log(test);
         // 

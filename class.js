@@ -68,14 +68,6 @@
         }) ? /\bthis\.privates\.\b/ : /.*/,
 		STR_PROTOTYPE = 'prototype';
 
-        var test = function() {
-            this.privates()
-        }
-
-        console.log(isPrivateCalledInFunctionRegEx.test(test));
-
-
-
     Logger.log('fntest: ');
     Logger.log(isSuperCalledInFunctionRegEx);
 
@@ -384,19 +376,23 @@
         //     Class.init.apply(Class, args || concatArgs([_super_class],arguments));
         // }
 
-        // for (name in Class.prototype) {
-        //     if (publics.hasOwnProperty(name)) {
-        //         Class.prototype[name] = (function() {
-        //             var originalProto = Class.prototype;
-        //             var original = Class.prototype[name];
-        //             return function() {
-        //                 originalProto.privates = privates;
-        //                 original.apply(this, arguments);
-        //                 delete originalProto.privates;
-        //             }
-        //         })();
-        //     }
-        // }
+        for (name in Class.prototype) {
+            if (publics.hasOwnProperty(name) 
+                && isPrivateCalledInFunctionRegEx.test(Class.prototype[name])
+                && $.isFunction(Class.prototype[name]))
+            {
+                Class.prototype[name] = (function() {
+                    var originalProto = Class.prototype;
+                    var original = Class.prototype[name];
+                    return function() {
+                        originalProto.privates = privates;
+                        var value = original.apply(this, arguments);
+                        delete originalProto.privates;
+                        return value;
+                    }
+                })();
+            }
+        }
 
         /* @Prototype*/
         return Class;
