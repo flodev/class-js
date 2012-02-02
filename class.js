@@ -109,6 +109,8 @@
                 Logger.log('overwritten prop detected!!!: ' + name);
                 Logger.log('overwrite existing function / property: ' + name);
 
+                Logger.log(name);
+
                 addTo[name] = getOverriddenMethodWithSuper(newProps[name], oldProps[name]);
             }
             else {
@@ -135,7 +137,7 @@
             // The method only need to be bound temporarily, so we
             // remove it when we're done executing
             ret = newMethod.apply(this, arguments);
-            this._super = tmp;
+            delete this._super;
             return ret;
         };
     }
@@ -342,29 +344,28 @@
         function Class() {
             return newInstance(this, arguments);
         }
+        
+        // @todo: separate from this function ?
+        if (parentClass) {
+            var parent = function() {};
+            parent.prototype = parentClass.prototype;
+            Class.prototype = new parent();
+
+            for (name in parentClass) {
+                statics[name] = parentClass[name];
+            }
+        }
 
         $.extend(Class.prototype, parentPrototype, publics);
 
         // Copy the properties over onto the new prototype
         inheritProps(publics, parentPrototype, Class[STR_PROTOTYPE]);
 
-        // Copy old stuff onto class
-        // for ( name in this ) {
-        //     if ( this.hasOwnProperty(name) ) {
-        //         Class[name] = this[name];
-        //     }
-        // }
-
         // copy new static props on class
         Logger.log('inherit static properties');
         inheritProps(statics, parentClass || function() {}, Class);
 
         registerClassInWindowNamespace(Class, fullName);
-
-        Logger.log('now extend for some things that cant be overwritten :S');
-
-        //make sure our prototype looks nice
-        // Class[STR_PROTOTYPE].Class = Class[STR_PROTOTYPE].constructor = Class;
 
         // call the class setup
         Logger.log('call the class setup');
@@ -376,6 +377,7 @@
         //     Class.init.apply(Class, args || concatArgs([_super_class],arguments));
         // }
 
+        // @todo: separate from this function ?
         for (name in Class.prototype) {
             if (publics.hasOwnProperty(name) 
                 && isPrivateCalledInFunctionRegEx.test(Class.prototype[name])
