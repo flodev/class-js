@@ -43,21 +43,21 @@ describe('Inheritance tests', function() {
     });
 
     
-    xit('Should container method of parent class', function() {
+    it('Should container method of parent class', function() {
 
         var test = new TestObj2();
 
         expect(test.parentFunc).toBeDefined();
     });
     
-    xit('overridden method should return "descendant parent"', function() {
+    it('overridden method should return "descendant parent"', function() {
 
         var test = new TestObj2();
 
         expect(test.toBeOverridden() == 'descendant parent').toBeTruthy();
     });
 
-    xit('should also work with 3 inhertiances', function() {
+    it('should also work with 3 inhertiances', function() {
 
         $.Class('TestObj3', {
             extend: TestObj2,

@@ -28,9 +28,9 @@ describe('Instantiation tests', function() {
 
         it('Should call the prototype constructor on instantiation', function() {
             
-            sinon.spy(TestObj.prototype, "init");
+            spyOn(TestObj.prototype, "init");
             var test = new TestObj();
-            expect(test.init.calledOnce).toBeTruthy();
+            expect(test.init).toHaveBeenCalled();
         });
 
         it('Should have defined properties', function() {
@@ -41,6 +41,24 @@ describe('Instantiation tests', function() {
 
             expect(test.testFunc).toBeDefined();
             expect(typeof(test.testFunc) == 'function').toBeTruthy();
+
+        });
+
+        it('Should create classes with namespace.', function() {
+
+            $.Class('Namespace.namespace.NamespaceTest', {
+                nsFunc: function() {
+                    return true;
+                }
+            });
+
+            var test = new Namespace.namespace.NamespaceTest();
+            expect(test).toBeDefined();
+
+            spyOn(test, 'nsFunc');
+
+            test.nsFunc();
+            expect(test.nsFunc).toHaveBeenCalled();
 
         });
        
@@ -84,7 +102,7 @@ describe('Instantiation tests', function() {
             delete window.TestPrivates;
         });
 
-        it('Should not container private methods.', function() {
+        it('Should not contain private methods.', function() {
             var test = new TestPrivates();
             expect(test._privateFunc).toBeUndefined();
             expect(test.privateFunc).toBeUndefined();

@@ -6,66 +6,65 @@
 (function( $ ) {
 
     var PropertyHelper = 
-    {
-        _init: function()
         {
-            this.privates = {};
-            this.publics = {};
-            this.statics = {};
-            this.parentClass = null;
-            this.parentPrototype = {};
+            _init: function()
+            {
+                this.privates = {};
+                this.publics = {};
+                this.statics = {};
+                this.parentClass = null;
+                this.parentPrototype = {};
+            },
+
+            determineProperties: function(properties)
+            {
+                this._init();
+                this._determineInheritance(properties);
+
+                var name;
+
+                for (name in properties) {
+                    if (name[0] == '$') {
+                        this.statics[name.substr(1,name.length)] = properties[name];
+                        continue;
+                    }
+                    if (name[0] == '_') {
+                        this.privates[name.substr(1,name.length)] = properties[name];
+                        continue;
+                    }
+                    
+                    this.publics[name] = properties[name];
+                }
+            },
+
+            _determineInheritance: function(properties)
+            {
+                if (properties.extend === undefined) {
+                    return;
+                }
+
+                if (!$.isFunction(properties.extend)) {
+                    return;
+                }
+
+                this.parentClass = properties.extend;
+                this.parentPrototype = this.parentClass[STR_PROTOTYPE];
+                delete properties.extend;
+            }
         },
 
-        determineProperties: function(properties)
-        {
-            this._init();
-            this._determineInheritance(properties);
-
-            var name;
-
-            for (name in properties) {
-                if (name[0] == '$') {
-                    this.statics[name.substr(1,name.length)] = properties[name];
-                    continue;
-                }
-                if (name[0] == '_') {
-                    this.privates[name.substr(1,name.length)] = properties[name];
-                    continue;
-                }
-                
-                this.publics[name] = properties[name];
-            }
-        },
-
-        _determineInheritance: function(properties)
-        {
-            if (properties.extend === undefined) {
-                return;
-            }
-
-            if (!$.isFunction(properties.extend)) {
-                return;
-            }
-
-            this.parentClass = properties.extend;
-            this.parentPrototype = this.parentClass[STR_PROTOTYPE];
-            delete properties.extend;
-        }
-    };
-
-	// =============== HELPERS =================
-
-    // if we are initializing a new class
-	var initializing = false,
 		concatArgs = function(arr, args){
 			return arr.concat($.makeArray(args));
 		},
+
 		isSuperCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
 		}) ? /\b_super\b/ : /.*/,
+
         isPrivateCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
         }) ? /\bthis\.privates\.\b/ : /.*/,
+
 		STR_PROTOTYPE = 'prototype';
 
     Logger.log('fntest: ');
@@ -74,7 +73,7 @@
     /**
      * overwrites an object with methods
      *
-     * @param newProps objecct (new properties)
+     * @param newProps object (new properties)
      * @param oldProps object (where the old properties might be)
      * @param addTo object (what we are adding to)
      */
@@ -121,8 +120,8 @@
     }
 
     /**
-     * @param name String
-     * @param fn function()
+     * @param newMethod function()
+     * @param oldMethod function()
      */
     function getOverriddenMethodWithSuper( newMethod, oldMethod ) 
     {
@@ -157,7 +156,23 @@
     {
         // the parts of the name we are looking up
         // ['App','Models','Recipe']
-        var parts = name ? name.split(regs.dot) : [],
+        var regs = {
+                undHash: /_|-/,
+                colons: /::/,
+                words: /([A-Z]+)([A-Z][a-z])/g,
+                lowUp: /([a-z\d])([A-Z])/g,
+                dash: /([a-z\d])([A-Z])/g,
+                replacer: /\{([^\}]+)\}/g,
+                dot: /\./
+            },
+            isContainer = function(current){
+                var type = typeof current;
+                return current && ( type == 'function' || type == 'object' );
+            },
+            getNext = function(current, nextPart, add){
+                return current[nextPart] !== undefined ? current[nextPart] : ( add && (current[nextPart] = {}) );
+            },
+            parts = name ? name.split(regs.dot) : [],
             length =  parts.length,
             current,
             ret, 
@@ -221,65 +236,6 @@
              + shortName);
     }
 
-    function proxy(funcs)
-    {
-        //args that should be curried
-        var args = $.makeArray(arguments),
-            self;
-
-        // get the functions to callback
-        funcs = args.shift();
-
-        // if there is only one function, make funcs into an array
-        if (!$.isArray(funcs) ) {
-            funcs = [funcs];
-        }
-        
-        // keep a reference to us in self
-        self = this;
-        
-        //!steal-remove-start
-        for( var i =0; i< funcs.length;i++ ) {
-            if(typeof funcs[i] == "string" && !$.isFunction(this[funcs[i]])){
-                throw ("class.js "+( this.fullName || this.Class.fullName)+" does not have a "+funcs[i]+"method!");
-            }
-        }
-        //!steal-remove-end
-        return function class_cb() {
-            Logger.log('class callback returned');
-            // add the arguments after the curried args
-            var cur = concatArgs(args, arguments),
-                isString, 
-                length = funcs.length,
-                f = 0,
-                func;
-            
-            // go through each function to call back
-            for (; f < length; f++ ) {
-                func = funcs[f];
-                if (!func ) {
-                    continue;
-                }
-                
-                // set called with the name of the function on self (this is how this.view works)
-                isString = typeof func == "string";
-                if ( isString && self._set_called ) {
-                    self.called = func;
-                }
-                
-                // call the function
-                cur = (isString ? self[func] : func).apply(self, cur || []);
-                
-                // pass the result to the next function (if there is a next function)
-                if ( f < length - 1 ) {
-                    cur = !$.isArray(cur) || cur._use_call ? [cur] : cur;
-                }
-            }
-            return cur;
-        }
-    }
-
-
     /**
      * @function newInstance
      * Creates a new instance of the class.  This method is useful for creating new instances
@@ -298,8 +254,7 @@
 
     /**
      * @param {String} [fullName]  the classes name (used for classes w/ introspection)
-     * @param {Object} [klass]  the new classes static/class functions
-     * @param {Object} [proto]  the new classes prototype functions
+     * @param {Object} [properties]  the new classes prototype functions
      * 
      * @return {jQuery.Class} returns the new class
      */
@@ -325,20 +280,6 @@
         
         Logger.log('privates');
         Logger.log(privates);
-
-        proto = {};
-
-        var 
-            // _super_class = this,
-            // _super = this[STR_PROTOTYPE],
-            shortName, namespace, prototype;
-
-
-        // Instantiate a base class (but only create the instance,
-        // don't run the init constructor)
-        initializing = true;
-        // prototype = new this();
-        initializing = false;
 
          // The dummy class constructor
         function Class() {
