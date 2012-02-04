@@ -4,36 +4,13 @@
 <head>
 
     <script type="text/javascript" src="jquery.js"></script>
-    <script type="text/javascript" src="class.js"></script>
 
     <script>
     
     $(function() {
 
-
+        console.log(/^_[a-z]/.test('__hallo'));
         
-        
-        var muhh = (function() {
-
-
-            var data = function() {
-                alert("hallo");
-            };
-                eval("var temp_=" + data + ";");
-
-
-            return {
-                get: function() {
-                    return temp_;
-                }
-            }
-        })();
-
-
-
-        muhh.get()();
-
-
     });
 
     </script>

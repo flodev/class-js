@@ -7,6 +7,8 @@
 
     var PropertyHelper = 
         {
+            isPrivatePropertyRegEx: /^_[a-z]/,
+
             _init: function()
             {
                 this.privates = {};
@@ -14,12 +16,14 @@
                 this.statics = {};
                 this.parentClass = null;
                 this.parentPrototype = {};
+                this.implement = [];
             },
 
             determineProperties: function(properties)
             {
                 this._init();
-                this._determineInheritance(properties);
+                this._setInheritance(properties);
+                this._setInterfaces(properties);
 
                 var name;
 
@@ -28,7 +32,7 @@
                         this.statics[name.substr(1,name.length)] = properties[name];
                         continue;
                     }
-                    if (name[0] == '_') {
+                    if (this.isPrivatePropertyRegEx.test(name)) {
                         this.privates[name.substr(1,name.length)] = properties[name];
                         continue;
                     }
@@ -37,7 +41,7 @@
                 }
             },
 
-            _determineInheritance: function(properties)
+            _setInheritance: function(properties)
             {
                 if (properties.extend === undefined) {
                     return;
@@ -48,8 +52,21 @@
                 }
 
                 this.parentClass = properties.extend;
-                this.parentPrototype = this.parentClass[STR_PROTOTYPE];
+                this.parentPrototype = this.parentClass['prototype'];
                 delete properties.extend;
+            },
+
+            _setInterfaces: function(properties)
+            {
+                if (properties.implement === undefined) {
+                    return;
+                }
+
+                this.implement = $.isArray(properties.implement) ? properties.implement : [properties.implement];
+
+                this.publics.___interfaces = this.implement;
+
+                delete properties.implement;
             }
         },
 
@@ -63,12 +80,44 @@
 
         isPrivateCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
-        }) ? /\bthis\.privates\.\b/ : /.*/,
-
-		STR_PROTOTYPE = 'prototype';
+        }) ? /\bthis\.privates\.\b/ : /.*/;
 
     Logger.log('fntest: ');
     Logger.log(isSuperCalledInFunctionRegEx);
+
+    /**
+     * @param reference object
+     */
+    function implementInterfaces(reference)
+    {
+        if (arguments.length < 2) {
+            throw new Error('function requires more then one param.');
+        }
+
+        var validInterfaces = [];
+
+        for (var i = 1; i < arguments.length; i++) {
+            if (!(arguments[i] instanceof Sys.base.Interface)) {
+                throw new Error('Object should be instance of Sys.base.Interface');
+            }
+            validInterfaces.push(arguments[i]);
+        }
+
+        var newClass = function() {
+            reference.apply(this, arguments);
+            Sys.base.Interface.ensureImplementation(this, this.___interfaces);
+        };
+
+        extend(reference, newClass);
+
+        newClass.prototype['___interfaces'] = validInterfaces;
+
+        console.log(validInterfaces);
+
+        return newClass;
+    }
+
+
 
     /**
      * overwrites an object with methods
@@ -244,12 +293,28 @@
      */ 
     function newInstance(instance, arguments) 
     {
-        Logger.log('newInstance');
+        ensureInterfaces(instance);
+
         // call init if there is an init, if setup returned args, use those as the arguments
         if ( instance.init ) {
             instance.init.apply(instance, arguments);
         }
+
         return instance;
+    }
+
+    function ensureInterfaces(object)
+    {
+        console.log(object);
+        if (!object.___interfaces) {
+            return;
+        }
+
+        for (i in object.___interfaces) {
+            if (!(object.___interfaces[i] instanceof $.Interface)) {
+                throw new Error('Object should be instance of $.Interface');
+            }
+        }
     }
 
     /**
@@ -300,7 +365,7 @@
         $.extend(Class.prototype, parentPrototype, publics);
 
         // Copy the properties over onto the new prototype
-        inheritProps(publics, parentPrototype, Class[STR_PROTOTYPE]);
+        inheritProps(publics, parentPrototype, Class['prototype']);
 
         // copy new static props on class
         Logger.log('inherit static properties');
