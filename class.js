@@ -362,7 +362,7 @@
             }
         }
 
-        $.extend(Class.prototype, parentPrototype, publics);
+        $.extend(Class.prototype, publics);
 
         // Copy the properties over onto the new prototype
         inheritProps(publics, parentPrototype, Class['prototype']);
