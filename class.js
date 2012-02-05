@@ -64,7 +64,7 @@
 
                 this.implement = $.isArray(properties.implement) ? properties.implement : [properties.implement];
 
-                this.publics.___interfaces = this.implement;
+                this.publics['___interfaces'] = this.implement;
 
                 delete properties.implement;
             }
@@ -334,6 +334,7 @@
             publics = PropertyHelper.publics,
             parentClass = PropertyHelper.parentClass,
             parentPrototype = PropertyHelper.parentPrototype,
+            implement = PropertyHelper.implement,
             name;
 
 
@@ -354,12 +355,16 @@
         // @todo: separate from this function ?
         if (parentClass) {
             var parent = function() {};
-            parent.prototype = parentClass.prototype;
+            parent.prototype = parentPrototype;
             Class.prototype = new parent();
 
             for (name in parentClass) {
                 statics[name] = parentClass[name];
             }
+        }
+
+        if (parentPrototype['___interfaces'] && publics['___interfaces']) {
+            publics['___interfaces'] = parentPrototype['___interfaces'].concat(publcs['___interfaces']);
         }
 
         $.extend(Class.prototype, publics);
