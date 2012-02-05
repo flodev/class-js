@@ -305,7 +305,6 @@
 
     function ensureInterfaces(object)
     {
-        console.log(object);
         if (!object.___interfaces) {
             return;
         }
@@ -364,7 +363,7 @@
         }
 
         if (parentPrototype['___interfaces'] && publics['___interfaces']) {
-            publics['___interfaces'] = parentPrototype['___interfaces'].concat(publcs['___interfaces']);
+            publics['___interfaces'] = parentPrototype['___interfaces'].concat(publics['___interfaces']);
         }
 
         $.extend(Class.prototype, publics);
