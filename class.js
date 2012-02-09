@@ -22,7 +22,7 @@
 		}) ? /\b_super\b/ : /.*/,
         isPrivateCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
-        }) ? /\bthis\.privates\.\b/ : /.*/;
+        }) ? /\bthis\.secrets\.\b/ : /.*/;
 
     function ClassGenerator()
     {
@@ -193,28 +193,63 @@
             $.Interface.ensureImplementation(object, object['___interfaces']);
         },
 
+        _inheritInterfaces: function()
+        {
+            if (this.props.parentPrototype['___interfaces'] && this.props.publics['___interfaces']) {
+                this.props.publics['___interfaces'] = 
+                    this.props.parentPrototype['___interfaces'].concat(this.props.publics['___interfaces']);
+            }
+        },
+
+        _inheritStatics: function()
+        {
+            if (!this.props.parentClass) {
+                return;
+            }
+
+            for (name in this.props.parentClass) {
+                this.props.statics[name] = this.props.parentClass[name];
+            }
+        },
+
+        _inheritPrototype: function(func)
+        {
+            if (!this.props.parentClass) {
+                return;
+            }
+
+            function parent() {};
+
+            parent.prototype = this.props.parentPrototype;
+            func.prototype = new parent();
+
+
+        },
+
+        _attachPrivates: function(func)
+        {
+            var me = this;
+            for (name in func.prototype) {
+                if (this.props.publics.hasOwnProperty(name) 
+                    && isPrivateCalledInFunctionRegEx.test(func.prototype[name])
+                    && $.isFunction(func.prototype[name]))
+                {
+                    func.prototype[name] = (function() {
+                        var originalProto = func.prototype;
+                        var original = func.prototype[name];
+                        return function() {
+                            originalProto.secrets = me.props.secrets;
+                            var value = original.apply(this, arguments);
+                            delete originalProto.secrets;
+                            return value;
+                        }
+                    })();
+                }
+            }
+        },
+
         create: function()
         {
-            Logger.log('extend was called');
-            
-            // var statics = PropertyHelper.statics,
-            //     privates = PropertyHelper.privates,
-            //     publics = PropertyHelper.publics,
-            //     parentClass = PropertyHelper.parentClass,
-            //     parentPrototype = PropertyHelper.parentPrototype,
-            //     implement = PropertyHelper.implement,
-            //     name;
-
-
-            // Logger.log('statics');
-            // Logger.log(statics);
-            // 
-            // Logger.log('publics');
-            // Logger.log(publics);
-            // 
-            // Logger.log('privates');
-            // Logger.log(privates);
-
             var generator = this;
 
              // The dummy class constructor
@@ -222,61 +257,16 @@
                 return generator.newInstance(this, arguments);
             }
             
-            // @todo: separate from this function ?
-            if (this.props.parentClass) {
-                var parent = function() {};
-                parent.prototype = this.props.parentPrototype;
-                Class.prototype = new parent();
-
-                for (name in this.props.parentClass) {
-                    this.props.statics[name] = this.props.parentClass[name];
-                }
-            }
-
-            if (this.props.parentPrototype['___interfaces'] && this.props.publics['___interfaces']) {
-                this.props.publics['___interfaces'] = this.props.parentPrototype['___interfaces']
-                                                      .concat(this.props.publics['___interfaces']);
-            }
-
+            this._inheritPrototype(Class); 
+            this._inheritStatics();
+            this._inheritInterfaces();
             $.extend(Class.prototype, this.props.publics);
-
             // Copy the properties over onto the new prototype
             this._inheritProps(this.props.publics, this.props.parentPrototype, Class['prototype']);
-
             // copy new static props on class
-            Logger.log('inherit static properties');
             this._inheritProps(this.props.statics, this.props.parentClass || function() {}, Class);
-
             this._registerClassInWindowNamespace(Class);
-
-            // call the class setup
-            Logger.log('call the class setup');
-            // var args = Class.setup.apply(Class, concatArgs([_super_class],arguments));
-            
-            // call the class init static constructor
-            Logger.log('call init class static constructor');
-            // if ( Class.init ) {
-            //     Class.init.apply(Class, args || concatArgs([_super_class],arguments));
-            // }
-
-            // @todo: separate from this function ?
-            for (name in Class.prototype) {
-                if (this.props.publics.hasOwnProperty(name) 
-                    && isPrivateCalledInFunctionRegEx.test(Class.prototype[name])
-                    && $.isFunction(Class.prototype[name]))
-                {
-                    Class.prototype[name] = (function() {
-                        var originalProto = Class.prototype;
-                        var original = Class.prototype[name];
-                        return function() {
-                            originalProto.privates = generator.props.privates;
-                            var value = original.apply(this, arguments);
-                            delete originalProto.privates;
-                            return value;
-                        }
-                    })();
-                }
-            }
+            this._attachPrivates(Class);
 
             /* @Prototype*/
             return Class;
@@ -290,7 +280,7 @@
         }
 
         this.properties = properties;
-        this.privates = {};
+        this.secrets = {};
         this.publics = {};
         this.statics = {};
         this.parentClass = null;
@@ -315,7 +305,7 @@
                     continue;
                 }
                 if (this.isPrivatePropertyRegEx.test(name)) {
-                    this.privates[name.substr(1,name.length)] = this.properties[name];
+                    this.secrets[name.substr(1,name.length)] = this.properties[name];
                     continue;
                 }
                 

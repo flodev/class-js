@@ -89,7 +89,7 @@ describe('Instantiation tests', function() {
         beforeEach(function() {
             $.Class('TestPrivates', {
                 testFunc: function() {
-                    return 'value ' + this.privates.privateFunc();
+                    return 'value ' + this.secrets.privateFunc();
                 },
 
                 _privateFunc: function() {
