@@ -190,11 +190,7 @@
                 return;
             }
 
-            for (i in object.___interfaces) {
-                if (!(object.___interfaces[i] instanceof $.Interface)) {
-                    throw new Error('Object should be instance of $.Interface');
-                }
-            }
+            $.Interface.ensureImplementation(object, object['___interfaces']);
         },
 
         create: function()
@@ -233,7 +229,7 @@
                 Class.prototype = new parent();
 
                 for (name in this.props.parentClass) {
-                    statics[name] = this.props.parentClass[name];
+                    this.props.statics[name] = this.props.parentClass[name];
                 }
             }
 
@@ -273,7 +269,7 @@
                         var originalProto = Class.prototype;
                         var original = Class.prototype[name];
                         return function() {
-                            originalProto.privates = privates;
+                            originalProto.privates = generator.props.privates;
                             var value = original.apply(this, arguments);
                             delete originalProto.privates;
                             return value;

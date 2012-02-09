@@ -2,7 +2,7 @@
 
 describe('Interface tests', function() {
 
-    xdescribe('Instantiation tests', function() {
+    describe('Instantiation tests', function() {
     
         var interface = null;
         
@@ -36,11 +36,16 @@ describe('Interface tests', function() {
         });
 
         it('Should throw an error for implement an object which is not instance of $.Interface', function() {
-            expect(function() {new WrongInterface()}).toThrow();
+            expect(function() {new WrongInterface()}).toThrow(new Error("Interface.ensureImplementation expects argument interfaces to be an array of instances of Interface."));
+;
         });
 
         it('Should throw an error for not implementing interface', function() {
-            expect(function() {new ImplementWrong() }).toThrow();
+            var name = 'TestInterface', method = 'test2';
+            expect(function() {new ImplementWrong() }).toThrow(new Error('Interface.ensureImplementation: object '
+                        + 'does not implement the ' + name
+                        + ' interface. Method "' + method + '()" was not found.'));
+;
         });
 
         it('Should not contain prop implement', function() {
@@ -80,7 +85,7 @@ describe('Interface tests', function() {
             delete window.Test2; 
         });
     
-        xit('Should behave the same with inherited classes.', function() {
+        it('Should behave the same with inherited classes.', function() {
             var test = new Test2();
 
             expect(test['___interfaces']).toBeDefined();
