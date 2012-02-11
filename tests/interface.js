@@ -94,12 +94,11 @@ describe('Interface tests', function() {
 
         it('Should have the same count of interfaces on parent class.', function() {
             var test2 = new Test2();
-            console.log(test2);
 
             var test1 = new Test1();
 
-            console.log(test1);
-
+            expect(test1['___interfaces'].length).toBe(1);
+            expect(test2['___interfaces'].length).toBe(2);
         });
     });
 });

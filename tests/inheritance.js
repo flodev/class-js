@@ -9,7 +9,7 @@ describe('Inheritance tests', function() {
 
 
             init: function() {
-                console.log("constructor");
+                return "constructor";
             },
 
             toBeOverridden: function() {
@@ -26,7 +26,7 @@ describe('Inheritance tests', function() {
             extend: TestObj1,
 
             init: function() {
-                console.log("constructor");
+                return "constructor";
             },
 
             toBeOverridden: function() {
@@ -63,7 +63,7 @@ describe('Inheritance tests', function() {
             extend: TestObj2,
             init: function() {
                 this._super();
-                console.log("hallo ich bin obj3");
+                return "hallo ich bin obj3";
             },
 
             test3: function() {
@@ -81,9 +81,11 @@ describe('Inheritance tests', function() {
 
 
     it('Should inherit static properties', function() {
-        var test = new TestObj2();
+        spyOn(TestObj2, "staticTest");
 
-        console.log(TestObj2.staticTest());
+        TestObj2.staticTest();
+
+        expect(TestObj2.staticTest).toHaveBeenCalled();
 
 
     });

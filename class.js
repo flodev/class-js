@@ -5,13 +5,12 @@
 
 (function( $ ) {
 
-    $.Class = function(fullName, properties) 
+    $.Class = function(className, properties) 
     {
         var props = new Properties(properties);
         props.separate();
 
-        var generator = new ClassGenerator();
-        generator.setName(fullName);
+        var generator = new ClassGenerator(className);
         generator.setProperties(props);
         generator.create();
 	};
@@ -24,18 +23,17 @@
 			xyz;
         }) ? /\bthis\.secrets\.\b/ : /.*/;
 
-    function ClassGenerator()
+    function ClassGenerator(className)
     {
+        if (className == '' || !className) {
+            throw new Error('Invalid class name.');
+        }
         this.props = null;
-        this.name = null;
+        this.name = className;
     }
 
     ClassGenerator.prototype =
     {
-        setName: function(name)
-        {
-            this.name = name;
-        },
         setProperties: function(properties) 
         {
             this.props = properties;

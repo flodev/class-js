@@ -1,16 +1,46 @@
 
 describe('Instantiation tests', function() {
 
+    describe('Scope tests.', function() {
+        
+        it('Should have clean vars when defining vars in init', function() {
+        
+            $.Class('class1', {
+                init: function() {
+                    this.test = "hello";
+                },
+
+                returnTest: function() {
+                    return this.test;
+                },
+
+                setTest: function(test) {
+                    this.test = test;
+                }
+            });
+
+            var test = new class1();
+
+            test.setTest("hello u");
+
+            var test2 = new class1();
+
+            expect(test.returnTest()).toEqual("hello u");
+            expect(test2.returnTest()).toEqual("hello");
+        });
+
+    });
+
     describe('Test prototype related.', function() {
 
          beforeEach(function() {
             $.Class('TestObj', {
                 init: function() {
-                    console.log("constructor");
+                    return "constructor";
                 },
 
                 testFunc: function() {
-                    console.log("new func");
+                    return "new func";
                 }
             });
          });
@@ -19,8 +49,14 @@ describe('Instantiation tests', function() {
             delete window.TestObj;
         });
 
+        it("Should throw an error when defining with empty class name.", function() {
         
-         it('Should create a function TestObj', function() {
+            expect(function() {$.Class("", {})}).toThrow(new Error('Invalid class name.'));
+
+        });
+
+        
+        it('Should create a function TestObj', function() {
 
             expect(TestObj).toBeDefined();
             expect(typeof(TestObj) == 'function').toBeTruthy();
