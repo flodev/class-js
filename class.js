@@ -13,7 +13,19 @@
         var generator = new ClassGenerator(className);
         generator.setProperties(props);
         generator.create();
+
+        if ($.Interface === undefined) {
+            $.Interface = dummyInterface;
+        }
 	};
+
+    function interfaceExists()
+    {
+        if ($.Interface === undefined || $.Interface === dummyInterface) {
+            return false;
+        }
+        return true;
+    };
 
     // define regex outside of ClassGenerator to define them once only
     var isSuperCalledInFunctionRegEx = /xyz/.test(function() {
@@ -30,7 +42,7 @@
         }
         this.props = null;
         this.name = className;
-    }
+    };
 
     ClassGenerator.prototype =
     {
@@ -173,7 +185,9 @@
          */ 
         newInstance: function(instance, arguments)
         {
-            this.ensureInterfaces(instance);
+            if (interfaceExists()) {
+                this.ensureInterfaces(instance);
+            }
 
             // call init if there is an init, if setup returned args, use those as the arguments
             if ( instance.init ) {
@@ -184,7 +198,7 @@
         },
         ensureInterfaces: function(object)
         {
-            if (!object.___interfaces) {
+            if (!object['___interfaces']) {
                 return;
             }
 
@@ -284,7 +298,7 @@
         this.parentClass = null;
         this.parentPrototype = {};
         this.implement = [];
-    }
+    };
 
     Properties.prototype = 
     {
@@ -332,12 +346,18 @@
                 return;
             }
 
-            this.implement = $.isArray(this.properties.implement) ? this.properties.implement : [this.properties.implement];
-
-            this.publics['___interfaces'] = this.implement;
+            if (interfaceExists()) {
+                this.implement = $.isArray(this.properties.implement) ? this.properties.implement : [this.properties.implement];
+                this.publics['___interfaces'] = this.implement;
+            }
 
             delete this.properties.implement;
         }
-    }
+    };
+
+    function dummyInterface() {};
+
+    dummyInterface.ensure = function() {};
+    dummyInterface.ensureImplementation = function() {};
 
 })(jQuery);

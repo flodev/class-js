@@ -54,6 +54,27 @@ describe('Interface tests', function() {
             expect(test.implement).toBeUndefined();
         });
 
+        it('Should be truthy when called $.interface.ensure with Implement Correctly', function() {
+
+            var test = new ImplementCorrectly();
+
+            spyOn($.Interface, 'ensure');
+
+            $.Interface.ensure(test, interface);
+
+            expect($.Interface.ensure).toHaveBeenCalledWith(test, interface);
+
+        });
+
+        it('Should throw an error when $.interface.ensure is called with ImplementWrong', function() {
+
+
+            expect(function() {
+                $.Interface.ensure(ImplementWrong, interface);
+            }).toThrow(new Error('Interface.ensureImplementation: object does not implement the TestInterface interface. Method "test1()" was not found.'));
+
+        });
+
     });
 
     describe('Inheritance Tests', function() {
@@ -100,5 +121,7 @@ describe('Interface tests', function() {
             expect(test1['___interfaces'].length).toBe(1);
             expect(test2['___interfaces'].length).toBe(2);
         });
+
+
     });
 });
