@@ -100,7 +100,7 @@ describe('Instantiation tests', function() {
        
     });
 
-    describe('Test static methods', function() {
+    xdescribe('Test static methods', function() {
         beforeEach(function() {
             $.Class('TestStatics', {
                 $staticFunc: function() {
@@ -125,11 +125,17 @@ describe('Instantiation tests', function() {
         beforeEach(function() {
             $.Class('TestPrivates', {
                 testFunc: function() {
-                    return 'value ' + this.secrets.privateFunc();
+                    return 'value ' + this._privateFunc();
                 },
 
                 _privateFunc: function() {
                     return 'private value';
+                },
+
+                _privateProp: 'helloo',
+
+                getPrivateProp: function() {
+                    return this._privateProp;
                 }
             });
         });
@@ -147,8 +153,19 @@ describe('Instantiation tests', function() {
         it('testFunc Should return the value of public func + value of private func.', function() {
             var test = new TestPrivates();
 
-            expect(test.testFunc() == 'value private value').toBeTruthy();
+            expect(test.testFunc()).toBe('value private value');
             expect(test.privates).toBeUndefined();
+        });
+
+        it('Should hide private properties also.', function() {
+        
+            var test = new TestPrivates();
+
+            expect(test.privateProp).toBeUndefined();
+            expect(test._privateProp).toBeUndefined();
+
+            expect(test.getPrivateProp()).toBe('helloo');
+
         });
     });
 });

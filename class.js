@@ -28,12 +28,13 @@
     };
 
     // define regex outside of ClassGenerator to define them once only
-    var isSuperCalledInFunctionRegEx = /xyz/.test(function() {
+    var privatePropertyRegEx = /\b(this._)+\w+\b/g;
+        isSuperCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
 		}) ? /\b_super\b/ : /.*/,
         isPrivateCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
-        }) ? /\bthis\.secrets\.\b/ : /.*/;
+        }) ? privatePropertyRegEx : /.*/;
 
     function ClassGenerator(className)
     {
@@ -238,27 +239,7 @@
 
         },
 
-        _attachPrivates: function(func)
-        {
-            var me = this;
-            for (name in func.prototype) {
-                if (this.props.publics.hasOwnProperty(name) 
-                    && isPrivateCalledInFunctionRegEx.test(func.prototype[name])
-                    && $.isFunction(func.prototype[name]))
-                {
-                    func.prototype[name] = (function() {
-                        var originalProto = func.prototype;
-                        var original = func.prototype[name];
-                        return function() {
-                            originalProto.secrets = me.props.secrets;
-                            var value = original.apply(this, arguments);
-                            delete originalProto.secrets;
-                            return value;
-                        }
-                    })();
-                }
-            }
-        },
+
 
         create: function()
         {
@@ -278,7 +259,6 @@
             // copy new static props on class
             this._inheritProps(this.props.statics, this.props.parentClass || function() {}, Class);
             this._registerClassInWindowNamespace(Class);
-            this._attachPrivates(Class);
 
             /* @Prototype*/
             return Class;
@@ -302,7 +282,7 @@
 
     Properties.prototype = 
     {
-        isPrivatePropertyRegEx: /^_[a-z]/,
+        isPrivatePropertyRegEx: /^_\w/,
 
         separate: function()
         {
@@ -317,12 +297,14 @@
                     continue;
                 }
                 if (this.isPrivatePropertyRegEx.test(name)) {
-                    this.secrets[name.substr(1,name.length)] = this.properties[name];
+                    this.secrets[name] = this.properties[name];
                     continue;
                 }
                 
                 this.publics[name] = this.properties[name];
             }
+
+            this._attachPrivates();
         },
 
         _separateInheritance: function()
@@ -352,7 +334,42 @@
             }
 
             delete this.properties.implement;
-        }
+        },
+
+        _getMethodWithPrivatesAttached: function(method, privatePropName, privateProp)
+        {
+            return function() {
+                this[privatePropName] = privateProp;
+                var value = method.apply(this, arguments);
+                delete this[privatePropName];
+                return value;
+            };
+
+        },
+
+        _attachPrivates: function()
+        {
+            var me = this;
+            for (var name in this.publics) {
+                var privateFunctionsToAttach = this.publics[name].toString().match(privatePropertyRegEx);
+
+                for (var i in privateFunctionsToAttach) {
+                    var privatePropName = this._getPrivateFunctionName(privateFunctionsToAttach[i]);
+                    if (this.secrets[privatePropName] === undefined) {
+                        continue;
+                    }
+
+                    this.publics[name] = this._getMethodWithPrivatesAttached(
+                        this.publics[name], privatePropName, this.secrets[privatePropName]
+                    );
+                }
+            }
+        },
+
+        _getPrivateFunctionName: function(name)
+        {
+            return name.replace(/(this.)/, '').replace(/\(/, '');
+        },
     };
 
     function dummyInterface() {};
