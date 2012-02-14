@@ -333,7 +333,7 @@
                 this.publics[name] = this.properties[name];
             }
 
-            this._attachPrivates();
+            this._attachPrivateMethods();
         },
 
         _separateInheritance: function()
@@ -365,7 +365,7 @@
             delete this.properties.implement;
         },
 
-        _getMethodWithPrivatesAttached: function(method, privatePropName, privateProp)
+        _getMethodWithPrivateMethodsAttached: function(method, privatePropName, privateProp)
         {
             return function() {
                 this[privatePropName] = privateProp;
@@ -376,26 +376,25 @@
 
         },
 
-        _attachPrivates: function()
+        _attachPrivateMethods: function()
         {
-            var me = this;
             for (var name in this.publics) {
                 var privateFunctionsToAttach = this.publics[name].toString().match(privatePropertyRegEx);
 
                 for (var i in privateFunctionsToAttach) {
-                    var privatePropName = this._getPrivateFunctionName(privateFunctionsToAttach[i]);
+                    var privatePropName = this._getPrivateMethodName(privateFunctionsToAttach[i]);
                     if (this.secrets[privatePropName] === undefined) {
                         continue;
                     }
 
-                    this.publics[name] = this._getMethodWithPrivatesAttached(
+                    this.publics[name] = this._getMethodWithPrivateMethodsAttached(
                         this.publics[name], privatePropName, this.secrets[privatePropName]
                     );
                 }
             }
         },
 
-        _getPrivateFunctionName: function(name)
+        _getPrivateMethodName: function(name)
         {
             return name.replace(/(this.)/, '').replace(/\(/, '');
         },

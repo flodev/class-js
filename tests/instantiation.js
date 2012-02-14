@@ -123,7 +123,7 @@ describe('Instantiation tests', function() {
 
     describe('Test private methods', function() {
         beforeEach(function() {
-            $.Class('TestPrivates', {
+            $.Class('TestPrivateMethods', {
                 testFunc: function() {
                     return 'value ' + this._privateFunc();
                 },
@@ -141,25 +141,25 @@ describe('Instantiation tests', function() {
         });
 
         afterEach(function() {
-            delete window.TestPrivates;
+            delete window.TestPrivateMethods;
         });
 
         it('Should not contain private methods.', function() {
-            var test = new TestPrivates();
+            var test = new TestPrivateMethods();
             expect(test._privateFunc).toBeUndefined();
             expect(test.privateFunc).toBeUndefined();
         });
 
         it('testFunc Should return the value of public func + value of private func.', function() {
-            var test = new TestPrivates();
+            var test = new TestPrivateMethods();
 
             expect(test.testFunc()).toBe('value private value');
-            expect(test.privates).toBeUndefined();
+            expect(test.secrets).toBeUndefined();
         });
 
         it('Should hide private properties also.', function() {
         
-            var test = new TestPrivates();
+            var test = new TestPrivateMethods();
 
             expect(test.privateProp).toBeUndefined();
             expect(test._privateProp).toBeUndefined();
