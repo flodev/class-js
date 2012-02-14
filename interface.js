@@ -1,14 +1,18 @@
 /**
- * @author Florian Biewald
- * created at 14.06.2011 22:23:26
- *
- * <--description-->
+ * $.Interface
+ * inspired by the examples of the book 
+ * "Pro Javascript Design Patterns" by Ross Harmse and Dustin Diaz
  */
 
 (function($) {
     
     $.Class('$.Interface', 
     {
+        /**
+         * @constructor
+         * @param {String} name
+         * @param {Array} methods
+         */
         init: function(name, methods)
         {
             this.methods = [];
@@ -28,6 +32,10 @@
             }
         },
 
+        /**
+         * @param {Object} object
+         * @param {Array} interfaces
+         */
         $ensureImplementation: function(object, interfaces)
         {
             if(arguments.length < 2) {
@@ -59,6 +67,9 @@
             }
         },
 
+        /**
+         * mixed params
+         */
         $ensure: function(object)
         {
             if (arguments.length < 2) {

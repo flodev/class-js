@@ -1,10 +1,12 @@
-//jQuery.Class 
-// This is a modified version of John Resig's class
-// http://ejohn.org/blog/simple-javascript-inheritance/
-// It provides class level inheritance and callbacks.
+// jQuery.Class 
+// Mostly inspired by $.Class component of javascriptMVC (http://javascriptmvc.com/docs.html#!jQuery.Class)
 
 (function( $ ) {
 
+    /**
+     * @param {String} className
+     * @param {Object} properties
+     */
     $.Class = function(className, properties) 
     {
         var props = new Properties(properties);
@@ -19,14 +21,8 @@
         }
 	};
 
-    function interfaceExists()
-    {
-        if ($.Interface === undefined || $.Interface === dummyInterface) {
-            return false;
-        }
-        return true;
-    };
-
+    
+    
     // define regex outside of ClassGenerator to define them once only
     var privatePropertyRegEx = /\b(this._)+\w+\b/g;
         isSuperCalledInFunctionRegEx = /xyz/.test(function() {
@@ -34,8 +30,23 @@
 		}) ? /\b_super\b/ : /.*/,
         isPrivateCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
-        }) ? privatePropertyRegEx : /.*/;
+        }) ? privatePropertyRegEx : /.*/,
 
+        /**
+         * @return {Boolean}
+         */
+        interfaceExists = function()
+        {
+            if ($.Interface === undefined || $.Interface === dummyInterface) {
+                return false;
+            }
+            return true;
+        };
+
+    /**
+     * @constructor
+     * @param {String} className
+     */
     function ClassGenerator(className)
     {
         if (className == '' || !className) {
@@ -47,16 +58,20 @@
 
     ClassGenerator.prototype =
     {
+        /**
+         * @param {Object} properties
+         */
         setProperties: function(properties) 
         {
             this.props = properties;
         },
+
         /**
          * overwrites an object with methods
          *
-         * @param newProps object (new properties)
-         * @param oldProps object (where the old properties might be)
-         * @param addTo object (what we are adding to)
+         * @param {Object} newProps
+         * @param {Object} oldProps (where the old properties might be)
+         * @param {Object} addTo (what we are adding to)
          */
         _inheritProps: function(newProps, oldProps, addTo) 
         {
@@ -74,9 +89,11 @@
                 }
             }
         },
+
         /**
-         * @param newMethod function()
-         * @param oldMethod function()
+         * @param {Function} newMethod
+         * @param {Function} oldMethod
+         * @return {Function}
          */
         _getOverriddenMethodWithSuper: function(newMethod, oldMethod)
         {
@@ -97,7 +114,8 @@
         },
 
         /**
-         * register class in dom namespace
+         * register class
+         * @param {Function} class
          */
         _registerClassInWindowNamespace: function (Class)
         {
@@ -108,8 +126,9 @@
 
             current[shortName] = Class;
         },
+
         /**
-         * copied from $.String helper to remove dependency
+         * copied from $.String (javascriptMVC) helper to remove dependency
          *
          * @param {String} name the name of the object to look for
          * @param {Array} [roots] an array of root objects to look for the 
@@ -178,10 +197,10 @@
                 }
             }
         },
+
         /**
-         * @function newInstance
-         * Creates a new instance of the class.  This method is useful for creating new instances
-         * with arbitrary parameters.
+         * @param {Object} instance
+         * @param {Array} arguments
          * @return {class} instance of the class
          */ 
         newInstance: function(instance, arguments)
@@ -197,6 +216,10 @@
 
             return instance;
         },
+
+        /**
+         * @param {Object} object
+         */
         ensureInterfaces: function(object)
         {
             if (!object['___interfaces']) {
@@ -225,6 +248,9 @@
             }
         },
 
+        /**
+         * @param {Function} func
+         */
         _inheritPrototype: function(func)
         {
             if (!this.props.parentClass) {
@@ -238,8 +264,6 @@
 
 
         },
-
-
 
         create: function()
         {
@@ -265,6 +289,11 @@
         }
     };
 
+    /**
+     * Helper class for separating properties
+     * @constructor
+     * @param {Object} properties
+     */
     function Properties(properties)
     {
         if (!properties) {
