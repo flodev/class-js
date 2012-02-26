@@ -4,13 +4,11 @@ describe('Interface tests', function() {
 
     describe('Instantiation tests', function() {
     
-        var interface = null;
-        
         beforeEach(function() {
-            interface = new $.Interface('TestInterface', ['test1', 'test2']);
+            $.Interface.createInstance('TestInterface', ['test1', 'test2']);
 
             $.Class('ImplementCorrectly', {
-                implement: interface,
+                implement: TestInterface,
                 test1: function() {
                 },
                 test2: function() {
@@ -19,7 +17,7 @@ describe('Interface tests', function() {
 
 
             $.Class('ImplementWrong', {
-                implement: interface,
+                implement: TestInterface,
                 test1: function() {
                 }
             });
@@ -33,6 +31,7 @@ describe('Interface tests', function() {
             delete window.ImplementCorrectly;
             delete window.WrongInterface;
             delete window.ImplementWrong;
+            delete window.TestInterface;
         });
 
         it('Should throw an error for implement an object which is not instance of $.Interface', function() {
@@ -58,19 +57,14 @@ describe('Interface tests', function() {
 
             var test = new ImplementCorrectly();
 
-            spyOn($.Interface, 'ensure');
-
-            $.Interface.ensure(test, interface);
-
-            expect($.Interface.ensure).toHaveBeenCalledWith(test, interface);
-
+            expect($.Interface.ensure(test, TestInterface)).toBeUndefined();
         });
 
         it('Should throw an error when $.interface.ensure is called with ImplementWrong', function() {
 
 
             expect(function() {
-                $.Interface.ensure(ImplementWrong, interface);
+                $.Interface.ensure(ImplementWrong, TestInterface);
             }).toThrow(new Error('Interface.ensureImplementation: object does not implement the TestInterface interface. Method "test1()" was not found.'));
 
         });

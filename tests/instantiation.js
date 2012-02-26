@@ -79,6 +79,9 @@ describe('Instantiation tests', function() {
             expect(typeof(test.testFunc) == 'function').toBeTruthy();
 
         });
+    });
+
+    describe('Namespace tests', function() {
 
         it('Should create classes with namespace.', function() {
 
@@ -95,12 +98,26 @@ describe('Instantiation tests', function() {
 
             test.nsFunc();
             expect(test.nsFunc).toHaveBeenCalled();
+            
+            delete window.Namespace;
+        });
+
+        it('Should keep old namespace items when adding a new.', function() {
+            
+            $.Class('Namespace.test.test1', function() {
+            
+            });
+
+            $.Class('Namespace.test.test2', function() {
+            });
+
+            expect(Namespace.test.test1).toBeDefined();
+            expect(Namespace.test.test2).toBeDefined();
 
         });
-       
     });
 
-    xdescribe('Test static methods', function() {
+    describe('Test static methods', function() {
         beforeEach(function() {
             $.Class('TestStatics', {
                 $staticFunc: function() {

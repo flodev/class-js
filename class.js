@@ -21,7 +21,32 @@
         }
 	};
 
-    
+    /**
+     * static
+     *
+     * @param {String} namespace the object to look for
+     * @return {Object} The object.
+     */
+    $.Class.getObject = function(namespace) 
+    {
+        if (namespace == '' || namespace == undefined) {
+            return window;
+        }
+
+        var namespaceParts = namespace.split('.');
+
+        var root = window;
+
+        for (var i in namespaceParts) {
+            if (typeof root[namespaceParts[i]] == 'undefined') {
+                root[namespaceParts[i]] = {};
+            }
+
+            root = root[namespaceParts[i]];
+        }
+
+        return root;
+    };
     
     // define regex outside of ClassGenerator to define them once only
     var privatePropertyRegEx = /\b(this._)+\w+\b/g;
@@ -121,81 +146,10 @@
         {
             var parts = this.name.split(/\./),
                 shortName = parts.pop(),
-                current = this._getObject(parts.join('.'), window, true),
+                current = $.Class.getObject(parts.join('.')),
                 namespace = current;
 
             current[shortName] = Class;
-        },
-
-        /**
-         * copied from $.String (javascriptMVC) helper to remove dependency
-         *
-         * @param {String} name the name of the object to look for
-         * @param {Array} [roots] an array of root objects to look for the 
-         *   name.  If roots is not provided, the window is used.
-         * @param {Boolean} [add] true to add missing objects to 
-         *  the path. false to remove found properties. undefined to 
-         *  not modify the root object
-         * @return {Object} The object.
-         */
-        _getObject: function(name, roots, add)
-        {
-            // the parts of the name we are looking up
-            // ['App','Models','Recipe']
-            var regs = {
-                    undHash: /_|-/,
-                    colons: /::/,
-                    words: /([A-Z]+)([A-Z][a-z])/g,
-                    lowUp: /([a-z\d])([A-Z])/g,
-                    dash: /([a-z\d])([A-Z])/g,
-                    replacer: /\{([^\}]+)\}/g,
-                    dot: /\./
-                },
-                isContainer = function(current){
-                    var type = typeof current;
-                    return current && ( type == 'function' || type == 'object' );
-                },
-                getNext = function(current, nextPart, add){
-                    return current[nextPart] !== undefined ? current[nextPart] : ( add && (current[nextPart] = {}) );
-                },
-                parts = name ? name.split(regs.dot) : [],
-                length =  parts.length,
-                current,
-                ret, 
-                i,
-                r = 0,
-                type;
-            
-            // make sure roots is an array
-            roots = $.isArray(roots) ? roots : [roots || window];
-            
-            if(length == 0){
-                return roots[0];
-            }
-            // for each root, mark it as current
-            while( current = roots[r++] ) {
-                // walk current to the 2nd to last object
-                // or until there is not a container
-                for (i =0; i < length - 1 && isContainer(current); i++ ) {
-                    current = getNext(current, parts[i], add);
-                }
-                // if we can get a property from the 2nd to last object
-                if( isContainer(current) ) {
-                    
-                    // get (and possibly set) the property
-                    ret = getNext(current, parts[i], add); 
-                    
-                    // if there is a value, we exit
-                    if( ret !== undefined ) {
-                        // if add is false, delete the property
-                        if ( add === false ) {
-                            delete current[parts[i]];
-                        }
-                        return ret;
-                        
-                    }
-                }
-            }
         },
 
         /**

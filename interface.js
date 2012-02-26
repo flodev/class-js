@@ -32,6 +32,16 @@
             }
         },
 
+        $createInstance: function(name, methods)
+        {
+             var parts = name.split(/\./),
+                shortName = parts.pop(),
+                current = $.Class.getObject(parts.join('.')),
+                namespace = current;
+
+            current[shortName] = new $.Interface(name, methods);
+        },
+
         /**
          * @param {Object} object
          * @param {Array} interfaces
