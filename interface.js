@@ -48,6 +48,15 @@
          */
         $ensureImplementation: function(object, interfaces)
         {
+            // @todo: replace with isObject()
+            if (object == undefined || object == null || $.isArray(object)) {
+                throw new Error('First parameter must be an object.');
+            }
+
+            if (!$.isArray(interfaces)) {
+                throw new Error('Second parameter must be an array.');
+            }
+
             if(arguments.length < 2) {
                 throw new Error("Function Interface.ensureImplementation called with " +
                 arguments.length + "arguments, but expected at least 2.");

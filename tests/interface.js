@@ -76,6 +76,16 @@ describe('Interface tests', function() {
 
         });
 
+        it('Should throw an Error when passing wrong values to ensueImplementation', function() {
+
+            expect(function() {$.Interface.ensureImplementation(undefined, undefined)})
+                .toThrow(new Error('First parameter must be an object.'));
+
+            expect(function() {$.Interface.ensureImplementation({}, undefined)})
+                .toThrow(new Error('Second parameter must be an array.'));
+
+        });
+
     });
 
     describe('Inheritance Tests', function() {
