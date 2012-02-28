@@ -69,6 +69,13 @@ describe('Interface tests', function() {
 
         });
 
+        it('Should create also namespaced interfaces.', function() {
+            
+            $.Interface.createInstance('Hello.Interface', ['test']);
+            expect(Hello.Interface instanceof $.Interface).toBeTruthy();
+
+        });
+
     });
 
     describe('Inheritance Tests', function() {

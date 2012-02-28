@@ -332,7 +332,11 @@
 
         _attachPrivateMethods: function()
         {
-            for (var name in this.publics) {
+            var name;
+            for (name in this.publics) {
+                if (!$.isFunction(this.publics[name])) {
+                    continue;
+                }
                 var privateFunctionsToAttach = this.publics[name].toString().match(privatePropertyRegEx);
 
                 for (var i in privateFunctionsToAttach) {

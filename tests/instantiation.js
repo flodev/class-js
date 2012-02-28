@@ -184,5 +184,17 @@ describe('Instantiation tests', function() {
             expect(test.getPrivateProp()).toBe('helloo');
 
         });
+
+        it('Should ignore properties when searching for private properties.', function() {
+            $.Class('testclass', {
+                test: null
+            });
+
+            var test = new testclass();
+
+            expect(test.test).toBeNull();
+
+            delete window.testclass;
+        });
     });
 });
