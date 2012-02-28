@@ -2,7 +2,6 @@
 // Mostly inspired by $.Class component of javascriptMVC (http://javascriptmvc.com/docs.html#!jQuery.Class)
 
 (function( $ ) {
-
     /**
      * @param {String} className
      * @param {Object} properties
@@ -33,9 +32,8 @@
             return window;
         }
 
-        var namespaceParts = namespace.split('.');
-
-        var root = window;
+        var namespaceParts = namespace.split('.'),
+            root = window;
 
         for (var i in namespaceParts) {
             if (typeof root[namespaceParts[i]] == 'undefined') {
@@ -49,7 +47,8 @@
     };
     
     // define regex outside of ClassGenerator to define them once only
-    var privatePropertyRegEx = /\b(this._)+\w+\b/g;
+    var privatePropertyRegEx = /\b(this._)+\w+\b/g,
+        privateSetterMethodRegEx = /\b(this.___set)+\w+\b/g,
         isSuperCalledInFunctionRegEx = /xyz/.test(function() {
 			xyz;
 		}) ? /\b_super\b/ : /.*/,
@@ -102,7 +101,6 @@
         {
             addTo = addTo || newProps;
             for (var name in newProps) {
-                // Check if we're overwriting an existing function
                 if ($.isFunction(newProps[name]) 
                     && $.isFunction(oldProps[name]) 
                     && isSuperCalledInFunctionRegEx.test(newProps[name])) 
@@ -261,6 +259,11 @@
         this.parentClass = null;
         this.parentPrototype = {};
         this.implement = [];
+
+        var me = this;
+        this.secrets.___set = function(name, value) {
+            me.secrets[name] = value;
+        }
     };
 
     Properties.prototype = 
@@ -319,12 +322,19 @@
             delete this.properties.implement;
         },
 
-        _getMethodWithPrivateMethodsAttached: function(method, privatePropName, privateProp)
+        _getMethodWithPrivateMethodsAttached: function(method, privateProperties)
         {
+            var me = this;
             return function() {
-                this[privatePropName] = privateProp;
+                for (var name in privateProperties) {
+                    this[name] = privateProperties[name];
+                }
                 var value = method.apply(this, arguments);
-                delete this[privatePropName];
+
+                for (var name in privateProperties) {
+                    delete this[name];
+                }
+
                 return value;
             };
 
@@ -337,18 +347,26 @@
                 if (!$.isFunction(this.publics[name])) {
                     continue;
                 }
-                var privateFunctionsToAttach = this.publics[name].toString().match(privatePropertyRegEx);
+                var methodString = this.publics[name].toString(),
+                    privatePropertyNames = methodString.match(privatePropertyRegEx),
+                    privateProperties = {},
+                    attach = false;
 
-                for (var i in privateFunctionsToAttach) {
-                    var privatePropName = this._getPrivateMethodName(privateFunctionsToAttach[i]);
-                    if (this.secrets[privatePropName] === undefined) {
+                for (var i in privatePropertyNames) {
+                    var propertyName = this._getPrivateMethodName(privatePropertyNames[i]);
+
+                    if (this.secrets[propertyName] == undefined) {
                         continue;
                     }
-
-                    this.publics[name] = this._getMethodWithPrivateMethodsAttached(
-                        this.publics[name], privatePropName, this.secrets[privatePropName]
-                    );
+                    attach = true;
+                    privateProperties[propertyName] = this.secrets[propertyName];
                 }
+
+                if (!attach) {
+                    continue;
+                }
+
+                this.publics[name] = this._getMethodWithPrivateMethodsAttached(this.publics[name], privateProperties);
             }
         },
 
