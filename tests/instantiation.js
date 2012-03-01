@@ -155,10 +155,30 @@ describe('Instantiation tests', function() {
                     return this._privateProp;
                 }
             });
+
+            $.Class('testclass', {
+                _priv1: 1,
+                _priv2: 2,
+                getPrivateProps: function()
+                {
+                    return this._priv1 + this._priv2;
+                },
+
+                setPrivateProp1: function(value)
+                {
+                    this.___set('_priv1', value);
+                },
+
+                getPrivateProp1: function() 
+                {
+                    return this._priv1;
+                }
+            });
         });
 
         afterEach(function() {
             delete window.TestPrivateMethods;
+            delete window.testclass;
         });
 
         it('Should not contain private methods.', function() {
@@ -195,6 +215,31 @@ describe('Instantiation tests', function() {
             expect(test.test).toBeNull();
 
             delete window.testclass;
+        });
+
+        it('Should work with private properties too.', function() {
+            
+            var test = new testclass();
+
+            expect(test.priv1).toBeUndefined();
+            expect(test._priv1).toBeUndefined();
+            expect(test.priv2).toBeUndefined();
+            expect(test._priv2).toBeUndefined();
+
+            expect(test.getPrivateProps()).toEqual(3);
+
+        });
+
+        it('Should assign private properties with ___set()', function() {
+            
+            var test = new testclass();
+
+            expect(test.getPrivateProp1()).toEqual(1);
+
+            test.setPrivateProp1(10);
+
+            expect(test.getPrivateProp1()).toEqual(10);
+
         });
     });
 });

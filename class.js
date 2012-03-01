@@ -260,10 +260,6 @@
         this.parentPrototype = {};
         this.implement = [];
 
-        var me = this;
-        this.secrets.___set = function(name, value) {
-            me.secrets[name] = value;
-        }
     };
 
     Properties.prototype = 
@@ -324,20 +320,35 @@
 
         _getMethodWithPrivateMethodsAttached: function(method, privateProperties)
         {
-            var me = this;
+            var thisClass = this;
+
+            // wrap the function
             return function() {
-                for (var name in privateProperties) {
-                    this[name] = privateProperties[name];
+                me = this;
+                // attach setter for private methods to current function
+                this.___set = function(name, value) {
+                    thisClass.secrets[name] = value;
+                    me[name] = value;
                 }
+                // attach private properties which the method uses
+                for (var name in privateProperties) {
+                    if (!thisClass.secrets[name]) {
+                        continue;
+                    }
+                    this[name] = thisClass.secrets[name];
+                }
+                // execute old method
                 var value = method.apply(this, arguments);
 
+                // delete private methods
                 for (var name in privateProperties) {
                     delete this[name];
                 }
 
+                delete this['___set'];
+
                 return value;
             };
-
         },
 
         _attachPrivateMethods: function()
@@ -355,7 +366,7 @@
                 for (var i in privatePropertyNames) {
                     var propertyName = this._getPrivateMethodName(privatePropertyNames[i]);
 
-                    if (this.secrets[propertyName] == undefined) {
+                    if (this.secrets[propertyName] == undefined && (propertyName !== '___set')) {
                         continue;
                     }
                     attach = true;
